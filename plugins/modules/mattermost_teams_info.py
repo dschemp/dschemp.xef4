@@ -9,7 +9,7 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: "mattermost_team_info"
+module: "mattermost_teams_info"
 
 short_description: "Gather information about a team in Mattermost."
 
@@ -33,18 +33,18 @@ author:
 
 EXAMPLES = r"""
 - name: "Get a list of all teams."
-  dschemp.xef4.mattermost_team_info:
+  dschemp.xef4.mattermost_teams_info:
     url: "https://chat.example.com"
     token: "ohhoosi0thoo0iegophe6vae9k"
 
 - name: "Get a single team."
-  dschemp.xef4.mattermost_team_info:
+  dschemp.xef4.mattermost_teams_info:
     url: "https://chat.example.com"
     token: "ohhoosi0thoo0iegophe6vae9k"
     team_id: "ij3aeng7ao8hee3ya8gaihaove"
 
 - name: "Get a single team by its name."
-  dschemp.xef4.mattermost_team_info:
+  dschemp.xef4.mattermost_teams_info:
     url: "https://chat.example.com"
     token: "ohhoosi0thoo0iegophe6vae9k"
     team_name: "ACME Service Squad"

@@ -3,6 +3,7 @@
 # Copyright: (c) 2023, Daniel Schemp (@dschemp)
 # MIT License (see LICENSE)
 
+import json
 from urllib.parse import urljoin
 from ansible.module_utils.basic import missing_required_lib, AnsibleModule
 from ansible.module_utils.common.text.converters import to_native
@@ -36,9 +37,12 @@ def connection_argument_spec():
     )
 
 
+MATTERMOST_API_CREATE_TEAM_PATH = "api/v4/teams"
+MATTERMOST_API_DELETE_TEAM_PATH = "api/v4/teams/{}"
 MATTERMOST_API_GET_TEAM_PATH = "api/v4/teams/{}"
 MATTERMOST_API_GET_ALL_TEAMS_PATH = "api/v4/teams"
 MATTERMOST_API_GET_TEAM_BY_NAME_PATH = "api/v4/teams/name/{}"
+MATTERMOST_API_GET_TEAM_EXISTS_PATH = "api/v4/teams/name/{}/exists"
 
 
 class MattermostAPI:
@@ -47,12 +51,14 @@ class MattermostAPI:
         self.base_url = url
         self.access_token = access_token
 
-    def __request(self, method: str, path: str, query_params: dict = None):
+    def __request(
+        self, method: str, path: str, query_params: dict = None, json_body=None
+    ):
         url = urljoin(self.base_url, path)
         headers = {"Authorization": "Bearer {}".format(self.access_token)}
 
         res = requests.request(
-            method=method, url=url, headers=headers, params=query_params
+            method=method, url=url, headers=headers, params=query_params, json=json_body
         )
 
         if res.ok:
@@ -103,3 +109,21 @@ class MattermostAPI:
 
     def get_team_by_name(self, name: str):
         return self.__request("GET", MATTERMOST_API_GET_TEAM_BY_NAME_PATH.format(name))
+
+    def team_exists(self, name: str) -> bool:
+        return self.__request("GET", MATTERMOST_API_GET_TEAM_EXISTS_PATH.format(name))[
+            "exists"
+        ]
+
+    def create_new_team(self, slug, display_name, type):
+        team_types = {"open": "O", "invite": "I"}
+        body = {"name": slug, "display_name": display_name, "type": team_types[type]}
+        res = self.__request("POST", MATTERMOST_API_CREATE_TEAM_PATH, json_body=body)
+        return res
+
+    def delete_team(self, team_id, permanent: bool = False):
+        self.__request(
+            "DELETE",
+            MATTERMOST_API_DELETE_TEAM_PATH.format(team_id),
+            query_params={"permanent": permanent},
+        )
